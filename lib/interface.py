@@ -96,7 +96,7 @@ def filter_movies_for_youngsters(parent_ratings, rec_movie_names, df):
         if len(recs_filtered) == 5:
             break
     if len(recs_filtered) < 5:
-        print("Sorry, not enough movies in my list met your conditions. I recommend Toy Story!
+        print("Sorry, not enough movies in my list met your conditions. I recommend Toy Story!")
     if len(recs_filtered) > 0:
         print("Here are your recommended movies:")
     return recs_filtered
@@ -165,7 +165,7 @@ def get_parent_ratings_youngsters():
     prate_consumerism = get_prate_consumerism()
     prate_drinking_drugs_smoking = get_prate_drinking_drugs_smoking()
     prate_language = get_prate_language()
-     prate_positive_messages = get_prate_positive_messages()
+    prate_positive_messages = get_prate_positive_messages()
     prate_genre = get_prate_genre()
     prate_MPAA_rating = get_prate_MPAA_rating()
     print("Thank you!")
