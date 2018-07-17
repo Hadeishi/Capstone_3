@@ -1,14 +1,9 @@
-import pandas as pd
+iimport pandas as pd
 import numpy as np
 import scipy.stats as stats
 import requests, json, csv, copy, pickle
-import matplotlib.pyplot as plt
 import math
 import random
-from nltk.tokenize import RegexpTokenizer
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics.pairwise import cosine_similarity
 from fuzzywuzzy import process
 
@@ -17,7 +12,7 @@ with open('data/movies_features_text.json') as json_file:
     movies_features_text = json.load(json_file)
 
 # Load csv of movies_processed_nontext_features.csv
-df = pd.read_csv('data/movies_processed_nontext_features.csv', index_col='title')
+df = pd.read_csv('data/movies_processed_nontext_features.csv')
 
 #Load pkl of similarity_matrix_tfidfvec_truncSVD1000.pkl
 with open('data/similarity_matrix_tfidfvec_truncSVD1000.pkl', 'rb') as f:
@@ -29,7 +24,7 @@ def title_recommender(movie_name, movie_list, limit=3):
 
 def find_similar_movies():
     movie_name = input("Give me a movie title and I'll give you five titles you might also like:")
-    for title in df.index:
+    for title in df['title']:
         if title == movie_name:
             sim_movies_text = similarity_matrix_tfidfvec_truncSVD1000[movie_name]
             print("Thanks! Here are my recommendations, along with review text similarity scores:")
@@ -37,10 +32,10 @@ def find_similar_movies():
             return recommendations
     limit = 3
     while title != movie_name:
-        results = title_recommender(movie_name, df.index, limit=limit)
+        results = title_recommender(movie_name, df['title'], limit=limit)
         print("Sorry, that movie title isn't in my list. Did you mean", results, "?")
         movie_name = input("(I need the exact title, please...)")
-        for title in df.index:
+        for title in df['title']:
             if title == movie_name:
                 sim_movies_text = similarity_matrix_tfidfvec_truncSVD1000[movie_name]
                 print("Thanks! Here are my recommendations, along with review text similarity scores:")
@@ -53,7 +48,7 @@ def find_similar_movies():
 
 def find_all_similar_movies():
     movie_name = input("Give me a movie title and I'll give you five titles you might also like:")
-    for title in df.index:
+    for title in df['title']:
         if title == movie_name:
             sim_movies_text = similarity_matrix_tfidfvec_truncSVD1000[movie_name]
             print("Thanks! Here are my recommendations, along with review text similarity scores:")
@@ -61,10 +56,10 @@ def find_all_similar_movies():
             return recommendations
     limit = 3
     while title != movie_name:
-        results = title_recommender(movie_name, df.index, limit=limit)
+        results = title_recommender(movie_name, df['title'], limit=limit)
         print("Sorry, that movie title isn't in my list. Did you mean", results, "?")
         movie_name = input("(I need the exact title, please...)")
-        for title in df.index:
+        for title in df['title']:
             if title == movie_name:
                 sim_movies_text = similarity_matrix_tfidfvec_truncSVD1000[movie_name]
                 print("Thanks! Here are my movie recommendations:")
@@ -90,15 +85,24 @@ def filter_movies_for_youngsters(parent_ratings, rec_movie_names, df):
         want_educ = 1
     else:
         want_educ = 0
-    for movie in rec_movie_names.index:
-        if df.loc[movie, 'is_educational'] == want_educ and df.loc[movie, 'Sexy Stuff'] <= int(prate_sexy_stuff) and df.loc[movie, 'Violence & Scariness'] <= int(prate_violence_scariness) and df.loc[movie, 'Consumerism'] <= int(prate_consumerism) and df.loc[movie, 'Drinking, Drugs & Smoking'] <= int(prate_drinking_drugs_smoking) and df.loc[movie, 'Language'] <= int(prate_language) and df.loc[movie, 'Positive Messages'] >= int(prate_positive_messages) and df.loc[movie, 'genre'] == prate_genre and df.loc[movie, 'MPAA_ordinal'] <= prate_MPAA_rating:
-            recs_filtered.append(movie)
-        if len(recs_filtered) == 5:
-            break
-    if len(recs_filtered) < 5:
+
+    movie_nums = get_index_nums(rec_movie_names)
+    if len(movie_nums) == 0:
         print("Sorry, not enough movies in my list met your conditions. I recommend Toy Story!")
-    if len(recs_filtered) > 0:
+        return(4279)
+    num_recs_filtered = []
+    for num in movie_nums:
+        if df.loc[num, 'is_educational'] == want_educ and df.loc[num, 'Sexy Stuff'] <= int(prate_sexy_stuff) and df.loc[num, 'Violence & Scariness'] <= int(prate_violence_scariness) and df.loc[num, 'Consumerism'] <= int(prate_consumerism) and df.loc[num, 'Drinking, Drugs & Smoking'] <= int(prate_drinking_drugs_smoking) and df.loc[num, 'Language'] <= int(prate_language) and df.loc[num, 'Positive Messages'] >= int(prate_positive_messages) and df.loc[num, 'genre'] == prate_genre and df.loc[num, 'MPAA_ordinal'] <= prate_MPAA_rating:
+            num_recs_filtered.append(num)
+        if len(num_recs_filtered) == 5:
+            break
+    if len(num_recs_filtered) < 5:
+        print("Sorry, not enough movies in my list met your conditions. I recommend Toy Story!")
+        return(4279)
+    if len(num_recs_filtered) > 0:
         print("Here are your recommended movies:")
+    recs_filtered = movie_nums_to_movies(num_recs_filtered)
+
     return recs_filtered
 
 def filter_movies_for_tweens(parent_ratings, rec_movie_names, df):
@@ -112,17 +116,34 @@ def filter_movies_for_tweens(parent_ratings, rec_movie_names, df):
     '''
     _, prate_consumerism, prate_drinking_drugs_smoking, prate_language, prate_positive_messages, prate_sex, prate_violence, prate_genre, prate_MPAA_rating = parent_ratings
 
-    recs_filtered = []
-    for movie in rec_movie_names.index:
-        if df.loc[movie, 'Consumerism'] <= int(prate_consumerism) and df.loc[movie, 'Drinking, Drugs & Smoking'] <= int(prate_drinking_drugs_smoking) and df.loc[movie, 'Language'] <= int(prate_language) and df.loc[movie, 'Positive Messages'] >= int(prate_positive_messages) and df.loc[movie, 'Sex'] >= int(prate_sex) and df.loc[movie, 'Violence'] >= int(prate_violence) and df.loc[movie, 'genre'] == prate_genre and df.loc[movie, 'MPAA_ordinal'] <= prate_MPAA_rating:
-            recs_filtered.append(movie)
-        if len(recs_filtered) == 5:
-            break
-    if len(recs_filtered) < 5:
+    movie_nums = get_index_nums(rec_movie_names)
+    if len(movie_nums) == 0:
         print("Sorry, not enough movies in my list met your conditions. I recommend Back to the Future!")
-    if len(recs_filtered) > 0:
+        return(6357)
+    num_recs_filtered = []
+    for num in movie_nums:
+        if df.loc[num, 'Consumerism'] <= int(prate_consumerism) and df.loc[num, 'Drinking, Drugs & Smoking'] <= int(prate_drinking_drugs_smoking) and df.loc[num, 'Language'] <= int(prate_language) and df.loc[num, 'Positive Messages'] >= int(prate_positive_messages) and df.loc[num, 'Sex'] >= int(prate_sex) and df.loc[num, 'Violence'] >= int(prate_violence) and df.loc[num, 'genre'] == prate_genre and df.loc[num, 'MPAA_ordinal'] <= prate_MPAA_rating:
+            num_recs_filtered.append(num)
+        if len(num_recs_filtered) == 5:
+            break
+    if len(num_recs_filtered) < 5:
+        print("Sorry, not enough movies in my list met your conditions. I recommend Back to the Future!")
+        return(6357)
+    if len(num_recs_filtered) > 0:
         print("Here are your recommended movies:")
+    recs_filtered = movie_nums_to_movies(num_recs_filtered)
+
     return recs_filtered
+
+def get_index_nums(movie_titles):
+    movie_nums = []
+    for name in movie_titles:
+        movie_nums.append(df.title[df.title==name].index.tolist()[0])
+    return(movie_nums)
+
+def movie_nums_to_movies(movie_nums):
+    movie_names = [df['title'][num] for num in movie_nums]
+    return(movie_names)
 
 def system_test(trials):
     rate_recs = []
@@ -150,11 +171,12 @@ def get_parent_ratings_first():
         prate_consumerism, prate_drinking_drugs_smoking, prate_language, prate_positive_messages, prate_sex, prate_violence, prate_genre, prate_MPAA_rating = get_parent_ratings_tweens()
         parent_ratings = youngsters, prate_consumerism, prate_drinking_drugs_smoking, prate_language, prate_positive_messages, prate_sex, prate_violence, prate_genre, prate_MPAA_rating
     movie_all_recs = find_all_similar_movies()
+    movie_names = movie_all_recs.index
     if youngsters == 1:
-        movie_recs = filter_movies_for_youngsters(parent_ratings, movie_all_recs, df)
+        movie_recs = filter_movies_for_youngsters(parent_ratings, movie_names, df)
         return movie_recs
     else:
-        movie_recs = filter_movies_for_tweens(parent_ratings, movie_all_recs, df)
+        movie_recs = filter_movies_for_tweens(parent_ratings, movie_names, df)
         return movie_recs
 
 def get_parent_ratings_youngsters():
@@ -437,5 +459,5 @@ def get_prate_MPAA_rating():
                 prate_MPAA_rating = 4
             if prate_MPAA_rating == 'NC-17':
                 prate_MPAA_rating = 5
-            else:
-                return prate_MPAA_rating
+        else:
+            return prate_MPAA_rating
