@@ -433,6 +433,7 @@ def get_prate_MPAA_rating():
     print("Finally, what MPAA rating is the most extreme MPAA Rating for your kids (G, PG, PG-13, R, NR (not rated), or NC-17?)")
     while True:
         prate_MPAA_rating = input("Please enter G, PG, PG-13, R, NR (not rated), NC-17, or ?")
+        print(prate_MPAA_rating)
         if (prate_MPAA_rating == '?' or
             prate_MPAA_rating == 'G' or
             prate_MPAA_rating == 'PG' or
@@ -440,13 +441,6 @@ def get_prate_MPAA_rating():
             prate_MPAA_rating == 'R' or
             prate_MPAA_rating == 'NR' or
             prate_MPAA_rating == 'NC-17'):
-            if prate_MPAA_rating == '?':
-                print("An example of a G rated movie is", df[df['MPAA_rating']=='G']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='G'])-1)])
-                print("An example of a PG rated movie is", df[df['MPAA_rating']=='PG']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='PG'])-1)])
-                print("An example of a PG-13 rated movie is", df[df['MPAA_rating']=='PG-13']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='PG-13'])-1)])
-                print("An example of an R rated movie is", df[df['MPAA_rating']=='R']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='R'])-1)])
-                print("An example of an NR rated movie is", df[df['MPAA_rating']=='NR']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='NR'])-1)])
-                print("An example of an NC-17 rated movie is", df[df['MPAA_rating']=='NC-17']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='NC-17'])-1)])
             if prate_MPAA_rating == 'G':
                 prate_MPAA_rating = 0
             if prate_MPAA_rating == 'PG':
@@ -459,5 +453,12 @@ def get_prate_MPAA_rating():
                 prate_MPAA_rating = 4
             if prate_MPAA_rating == 'NC-17':
                 prate_MPAA_rating = 5
-        else:
-            return prate_MPAA_rating
+            if prate_MPAA_rating == '?':
+                print("An example of a G rated movie is", df[df['MPAA_rating']=='G']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='G'])-1)])
+                print("An example of a PG rated movie is", df[df['MPAA_rating']=='PG']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='PG'])-1)])
+                print("An example of a PG-13 rated movie is", df[df['MPAA_rating']=='PG-13']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='PG-13'])-1)])
+                print("An example of an R rated movie is", df[df['MPAA_rating']=='R']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='R'])-1)])
+                print("An example of an NR rated movie is", df[df['MPAA_rating']=='NR']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='NR'])-1)])
+                print("An example of an NC-17 rated movie is", df[df['MPAA_rating']=='NC-17']['title'].iloc[random.randint(0, len(df[df['MPAA_rating']=='NC-17'])-1)])
+            else:
+                return prate_MPAA_rating
