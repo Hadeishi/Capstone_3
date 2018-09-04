@@ -4,7 +4,7 @@
 
    **** WARNING ****   **** WARNING ****   **** WARNING ****   **** WARNING ****   **** WARNING ****
 
-This system will not work unless a cosine similarity matrix is downloaded and put into the /data folder.  To get to the file click [here]https://drive.google.com/open?id=1MZv3t0YlG6VIQYRr5c0_e88stkJFFO1z.
+This system will not work unless a cosine similarity matrix is downloaded and put into the /data folder.  To get to the file click [here](https://drive.google.com/open?id=1MZv3t0YlG6VIQYRr5c0_e88stkJFFO1z).
 
    **** WARNING ****   **** WARNING ****   **** WARNING ****   **** WARNING ****   **** WARNING ****
 
